@@ -21,7 +21,8 @@ classdef BoardUtilities
             board.blank_position =  find(ismember(tiles, 9));            
         end
         
-        %Iterative depth-first search
+        %Iterative depth-first search, returns the depth
+        %at which the node was found
         function iterations = idfs(board)
             iterations = 1;
             found = false;
