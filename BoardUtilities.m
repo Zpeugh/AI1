@@ -33,7 +33,7 @@ classdef BoardUtilities
             
             if (depth == 0 && isGoal(board) )   
                 found = true;
-                disp('###############FOUND A GOAL STATE###############');
+                disp('\n###############FOUND A GOAL STATE###############');
                 return;
             elseif( depth > 0)
                 adjacentBoards = BoardUtilities.nextBoards(board);           
@@ -86,9 +86,10 @@ classdef BoardUtilities
         end    
         
         %A* search algorithm that uses manhattenDistance as the heuristic
-        function nodes_visited = astar(board)
+        function finishNode = astar(board)
             
-            nodes_visited = 0;
+           
+            nodesVisited = 0;
             % these lists need to be some List structure with push, pop,
             % isEmpty methods and dynamic sizing. {} structs are not
             % suitable as they are slow and 
@@ -96,14 +97,14 @@ classdef BoardUtilities
             closedList = {};
             
             %initialize the openList with the first BoardNode
-            b = BoardNode(board);
+            b = BoardNode(board);            
+            finishNode = b;
             b.g = 1;
             b.f = b.g + b.h;
             openList{end + 1} = b;
             
             while ( ~isempty(openList) )
-                
-                nodes_visited = nodes_visited + 1;  %count nodes visited              
+                                              
                 %pop the first element from openList;                
                 parentNode = openList{1};
                 openList(1) = [];
@@ -114,29 +115,24 @@ classdef BoardUtilities
                 %set the next nodes' parent to the parent node
                 for i=1:length(nextNodes)
                     
+                    nodesVisited = nodesVisited + 1;  %count nodes visited
                     node = BoardNode(nextNodes{i});
                     
                     node.parent = parentNode;
-                    
-                    if (isGoal(node.board))
-                        disp('###############FOUND A GOAL STATE###############');
-                        return;
-                    end
-                                       
+                                        
                     node.g = parentNode.g + 1;
                     node.h = manhattenDistance(node.board);
                     node.f = node.g + node.h;
                     
-                    skip = false;
-                    if (containsBetterNode(openList, node))
-                        %skip node if node.f is > the f for the one in list
-                        disp('skipped 1');
-                        skip = true;
-                    elseif (containsBetterNode(closedList, node) || skip)
-                        disp('skipped 2');                                          
-                    else
-                        openList{end + 1} = node;
-                        disp('added 1');                        
+                    if (isGoal(node.board))
+                        finishNode = node;                        
+                        disp('###############FOUND A GOAL STATE###############');
+                        fprintf(1,'Visited a total of %i nodes\n', nodesVisited);
+                        return;
+                    end                   
+                    
+                    if ( ~containsBetterNode(openList, node) && ~containsBetterNode(closedList, node) )
+                        openList{end + 1} = node;                                    
                     end
                 end
                 %push parentNode on closed list  
