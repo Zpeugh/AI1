@@ -107,13 +107,8 @@ classdef BoardUtilities
                 %pop the first element from openList;                
                 parentNode = openList{1};
                 openList(1) = [];
-                
-                
-                disp(parentNode.g);
-                disp(parentNode.h);
-                disp(parentNode.board.tiles);
-                
-                parentNode.successors = BoardUtilities.nextBoards(board);
+             
+                parentNode.successors = BoardUtilities.nextBoards(parentNode.board);
                 nextNodes = parentNode.successors;
                 
                 %set the next nodes' parent to the parent node
