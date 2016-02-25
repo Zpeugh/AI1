@@ -8,13 +8,10 @@ classdef BoardUtilities
         
         %Generate a random, solvable EightBoard
         function board = generateBoard()
-            tiles = randperm(9);       
-            moves = numMoves(tiles);
+            tiles = randperm(9);                  
             % This measure is not smart
-            while ( ~isValidArray(tiles) || moves > 3 )                
+            while ( ~isValidArray(tiles) )                
                 tiles = randperm(9);
-                moves = numMoves(tiles);                
-                disp(moves);
             end
             board = EightBoard(tiles);
         end
@@ -89,32 +86,41 @@ classdef BoardUtilities
         end    
         
         %A* search algorithm that uses manhattenDistance as the heuristic
-        function time = astar(board)
+        function nodes_visited = astar(board)
             
-            openList = {}; 
+            nodes_visited = 0;
+            % these lists need to be some List structure with push, pop,
+            % isEmpty methods and dynamic sizing. {} structs are not
+            % suitable as they are slow and 
+            openList = {};
             closedList = {};
             
             %initialize the openList with the first BoardNode
             b = BoardNode(board);
             b.g = 1;
             b.f = b.g + b.h;
-            openList{1} = b;
+            openList{end + 1} = b;
             
-            
-            while (length(openList) ~=0)
+            while ( ~isempty(openList) )
                 
-                %remove the node, this needs to pop() and destroy the
-                %element
-                parentNode = openList{1};                
-               
+                nodes_visited = nodes_visited + 1;  %count nodes visited              
+                %pop the first element from openList;                
+                parentNode = openList{1};
+                openList(1) = [];
+                
+                
                 disp(parentNode.g);
+                disp(parentNode.h);
+                disp(parentNode.board.tiles);
+                
                 parentNode.successors = BoardUtilities.nextBoards(board);
                 nextNodes = parentNode.successors;
                 
                 %set the next nodes' parent to the parent node
                 for i=1:length(nextNodes)
+                    
                     node = BoardNode(nextNodes{i});
-                    disp(node);
+                    
                     node.parent = parentNode;
                     
                     if (isGoal(node.board))
@@ -126,24 +132,21 @@ classdef BoardUtilities
                     node.h = manhattenDistance(node.board);
                     node.f = node.g + node.h;
                     
-                    %TODO: modify open and closed list to be able to check
-                    %if values of f are lower and tiles are the same
                     skip = false;
                     if (containsBetterNode(openList, node))
                         %skip node if node.f is > the f for the one in list
+                        disp('skipped 1');
                         skip = true;
                     elseif (containsBetterNode(closedList, node) || skip)
-                        %skip node if node.f is > the f for the one in list                    
+                        disp('skipped 2');                                          
                     else
-                        openList{length(openList) + 1} = node;
+                        openList{end + 1} = node;
+                        disp('added 1');                        
                     end
                 end
-                closedList{length(openList) + 1} = parentNode;     
-                
-                
+                %push parentNode on closed list  
+                closedList{end + 1} = parentNode;   
             end
-            
-            
         end
         
         
@@ -196,8 +199,7 @@ function alreadyBeen = containsBetterNode(list, node)
                 return;
             end
         end
-    end
-    
+    end    
     alreadyBeen = false;
         
 

@@ -5,9 +5,9 @@ classdef BoardNode
     properties
         board
         parent
-        f
-        g
-        h
+        f = 0
+        g = 0
+        h = 0
         successors = {}
     end    
     
