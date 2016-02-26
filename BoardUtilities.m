@@ -6,6 +6,37 @@ classdef BoardUtilities
     
     methods (Static)
         
+         % Returns the offset that the newBoard took over oldBoard
+        function offset = getOffset(oldBoard, newBoard)
+            newBlankPos = find(newBoard.tiles, 9);
+            oldBlankPos = find(oldBoard.tiles, 9);
+            offset = oldBlankPos - newBlankPos;
+        end
+        
+        % Generates a Board n moves away from goal state
+        function board = generateBoard_N_StepsAway(n)            
+            
+            board = EightBoard([1 2 3 4 5 6 7 8 9]);
+            visitedBoards = {};
+            count = 0;
+            visitedBoards{1} = board;            
+            for i = 1:n               
+                moves = BoardUtilities.nextBoards(board);
+                for x = 1: length(moves)
+                    newBoard = moves{x};
+                    if ( ~hasBeenVisited(visitedBoards, newBoard) )
+                        count = count + 1;                      
+                        board = newBoard;
+                        visitedBoards{end + 1} = board;                        
+                        break;
+                    end
+                end                
+            end
+            disp('Got board');
+        end    
+        
+        
+        
         %Generate a random, solvable EightBoard
         function board = generateBoard()
             tiles = randperm(9);                  
@@ -106,6 +137,7 @@ classdef BoardUtilities
             while ( ~isempty(openList) )
                                               
                 %pop the first element from openList;                
+                %parentNode = openList{1};
                 parentNode = openList{1};
                 openList(1) = [];
              
@@ -182,6 +214,7 @@ end
 
 function alreadyBeen = containsBetterNode(list, node)
 
+    %should try and optimize this with linear algebra instead of looping.
     for i=1: length(list)
         someNode = list{i};
         if (isequal(someNode.board.tiles, node.board.tiles) )
@@ -208,7 +241,7 @@ function hasBeen = hasBeenVisited(visitedBoards, board)
     tiles = board.tiles;
 
     for i = 1: length(visitedBoards)
-        if (isequal(visitedBoards{i}, tiles) )
+        if (isequal(visitedBoards{i}.tiles, tiles) )
             hasBeen = true;
             return;
         end
