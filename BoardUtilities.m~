@@ -4,7 +4,15 @@ classdef BoardUtilities
     properties
     end
     
-    methods (Static)        
+    methods (Static)
+        
+         % Returns the offset that the newBoard took over oldBoard
+        function offset = getOffset(oldBoard, newBoard)
+            newBlankPos = find(newBoard.tiles, 9);
+            oldBlankPos = find(oldBoard.tiles, 9);
+            offset = oldBlankPos - newBlankPos;
+        end
+        
         % Generates a Board n moves away from goal state
         function board = generateBoard_N_StepsAway(n)            
             
@@ -13,22 +21,21 @@ classdef BoardUtilities
             count = 1;
             visitedBoards{count} = board;
             for i = 1:n               
-                % fprintf('i = %d\n', i);
+                fprintf('i = %d\n', i);
                 moves = BoardUtilities.nextBoards(board);
-                moves = moves(randperm(length(moves)));
                 for x = 1: length(moves)
-                    % fprintf('x = %d\n', x);
+                    fprintf('x = %d\n', x);
                     newBoard = moves{x};
                     if ( ~hasBeenVisited(visitedBoards, newBoard) )
                         count = count + 1;                      
                         board = newBoard;
-                        visitedBoards{count} = board;                        
+                        visitedBoards{count + 1} = board;                        
                         break;
                     end
                 end
             end
-            % disp(board.tiles)
-            % fprintf('moves made = %d and n = %d\n', count - 1, n);
+            disp(board.tiles)
+            fprintf('moves made = %d and n = %d\n', count - 1, n);
         end
         
         
@@ -237,8 +244,7 @@ function hasBeen = hasBeenVisited(visitedBoards, board)
     tiles = board.tiles;
 
     for i = 1: length(visitedBoards)
-        % disp('visitedBoards:\n');
-        % disp(visitedBoards);
+        
         if (isequal(visitedBoards{i}.tiles, tiles) )
             hasBeen = true;
             return;
