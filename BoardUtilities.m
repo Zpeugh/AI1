@@ -128,10 +128,9 @@ classdef BoardUtilities
         function count = matchCount(node, list)
             count = 0;
             for i=1:length(list)
-                disp(list{i}.board.tiles);
-                disp(node.board.tiles);
                 if (isequal(list{i}.board.tiles, node.board.tiles))
                     count = count + 1;
+                    return;
                 end
             end
         end
@@ -152,13 +151,14 @@ classdef BoardUtilities
             while (~isempty(open))
                 current = BoardUtilities.lowestScore(open);
                 if (isGoal(current.board))
+                    disp('##############FOUND BOARD##############');
                     break;
                 end
                 
                 for j=1:length(open)
                     if (isequal(open{j}.board.tiles, current.board.tiles))
                         if (open{j}.f == current.f)
-                            open{j} = [];
+                            open(j) = [];
                             break;
                         end
                     end
@@ -169,7 +169,11 @@ classdef BoardUtilities
                 neighbors = BoardUtilities.nextBoards(current.board);
                 for i=1:length(neighbors)
                     neighbor = neighbors{i};
-                    neighborNode = BoardNode(neighbor);
+                    neighborNode = BoardNode(neighbor);                     
+                    neighborNode.g = current.g + 1;
+                    neighborNode.h = manhattanDistance(neighbor);
+                    neighborNode.f = neighborNode.g + neighborNode.h;
+                    
                     if (BoardUtilities.matchCount(neighborNode, closed) == 0)
                         if (BoardUtilities.matchCount(neighborNode, open) == 0)
                             cost = cost + 1;
@@ -177,10 +181,7 @@ classdef BoardUtilities
                         elseif (current.g + 1 >= neighborNode.g)
                             continue;
                         end
-                        
-                        neighborNode.g = current.g + 1;
-                        neighborNode.h = manhattanDistance(neighbor);
-                        neighborNode.f = neighborNode.g + neighborNode.h;
+                       
                     end
                 end 
             end
