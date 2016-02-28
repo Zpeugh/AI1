@@ -1,0 +1,23 @@
+function iterative_depth_first_search(board)
+    iterations = 1;
+    found = false;
+    while (found == false)
+        found = depth_limited_search(board, iterations);
+        iterations++
+    end
+end
+
+
+function depth_limited_search(board, depth)
+
+    if (depth == 0 && board is goal state )
+        return true
+    else if( depth > 0)
+        for all neighbors of board
+            if depth_limited_search(neighbor, depth - 1);
+                return true
+            end
+        end
+    end
+    return false
+end

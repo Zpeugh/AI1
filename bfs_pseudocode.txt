@@ -1,0 +1,21 @@
+function BFS(board)
+    q = Queue()
+    visitedBoards = List()
+    q.enqueue(board)
+
+    while q is not empty:
+        currentBoard = q.dequeue()
+
+        if currentBoard is goal state
+            return
+        end
+
+        visitedBoards.append(currentBoard)
+        for all neighbors of currentBoard
+
+            if neighbor not in visitedBoards
+                q.enqueue(newBoard)
+            end
+        end
+    end
+end
