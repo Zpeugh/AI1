@@ -4,7 +4,7 @@ classdef BoardUtilities
     properties
     end
     
-    methods (Static)        
+    methods (Static)
         % Generates a Board n moves away from goal state
         function board = generateBoard_N_StepsAway(n)            
             
@@ -51,7 +51,6 @@ classdef BoardUtilities
             while (found == false)                
                 found = BoardUtilities.dls(board, iterations);
                 iterations = iterations + 1;
-                disp(iterations);
             end           
         end
                 
@@ -89,9 +88,18 @@ classdef BoardUtilities
                 count = count + 1;
                 currentBoard = q.pop();
                 
+                disp('currently deliberating on: ');
+                disp(currentBoard);
+                
+                if isGoal(currentBoard)
+                    iterations = length(visitedBoards);
+                    disp('###############FOUND A GOAL STATE###############');
+                    return;
+                end
+                
                 %Could possibly be optimized as it has to change length of
                 %struct every iteration.  
-                visitedBoards{length(visitedBoards) + 1} = currentBoard.tiles;
+                visitedBoards{length(visitedBoards) + 1} = currentBoard;
                
                 %Get next possible boards
                 adjacentBoards = BoardUtilities.nextBoards(currentBoard);
@@ -100,11 +108,6 @@ classdef BoardUtilities
                 %queue.  
                 for i = 1: length(adjacentBoards)
                     newBoard = adjacentBoards{i};
-                    if isGoal(currentBoard)
-                        iterations = length(visitedBoards);
-                        disp('###############FOUND A GOAL STATE###############');
-                        return;
-                    end
                     if (~hasBeenVisited(visitedBoards, newBoard) )
                         q.push(newBoard);
                     end
@@ -112,7 +115,78 @@ classdef BoardUtilities
             end            
         end    
         
-        %A* search algorithm that uses manhattenDistance as the heuristic
+        function lowest = lowestScore(open)
+            low = 10000;
+            for i=1:length(open)
+                if (open{i}.f < low)
+                    low = open{i}.f;
+                    lowest = open{i};
+                end                    
+            end
+        end
+        
+        function count = matchCount(node, list)
+            count = 0;
+            for i=1:length(list)
+                disp(list{i}.board.tiles);
+                disp(node.board.tiles);
+                if (isequal(list{i}.board.tiles, node.board.tiles))
+                    count = count + 1;
+                end
+            end
+        end
+        
+        function cost = A_STAR(start)
+            open = {};
+            closed = {};
+            
+            cost = 1;
+            
+            startNode = BoardNode(start);
+            startNode.g = 1;
+            startNode.h = manhattanDistance(start);
+            startNode.f = startNode.g + startNode.h;
+            
+            open{end + 1} = startNode;
+            
+            while (~isempty(open))
+                current = BoardUtilities.lowestScore(open);
+                if (isGoal(current.board))
+                    break;
+                end
+                
+                for j=1:length(open)
+                    if (isequal(open{j}.board.tiles, current.board.tiles))
+                        if (open{j}.f == current.f)
+                            open{j} = [];
+                            break;
+                        end
+                    end
+                end
+                % open = open(open~=current);
+                closed{end + 1} = current;
+                
+                neighbors = BoardUtilities.nextBoards(current.board);
+                for i=1:length(neighbors)
+                    neighbor = neighbors{i};
+                    neighborNode = BoardNode(neighbor);
+                    if (BoardUtilities.matchCount(neighborNode, closed) == 0)
+                        if (BoardUtilities.matchCount(neighborNode, open) == 0)
+                            cost = cost + 1;
+                            open{end + 1} = neighborNode;
+                        elseif (current.g + 1 >= neighborNode.g)
+                            continue;
+                        end
+                        
+                        neighborNode.g = current.g + 1;
+                        neighborNode.h = manhattanDistance(neighbor);
+                        neighborNode.f = neighborNode.g + neighborNode.h;
+                    end
+                end 
+            end
+        end
+        
+        %A* search algorithm that uses manhattanDistance as the heuristic
         function finishNode = astar(board)
             
            
@@ -149,7 +223,7 @@ classdef BoardUtilities
                     node.parent = parentNode;
                                         
                     node.g = parentNode.g + 1;
-                    node.h = manhattenDistance(node.board);
+                    node.h = manhattanDistance(node.board);
                     node.f = node.g + node.h;
                     
                     if (isGoal(node.board))
@@ -225,8 +299,8 @@ function alreadyBeen = containsBetterNode(list, node)
 
 end
 
-%Returns the manhatten distance of the board from the goal state
-function dist = manhattenDistance(board)
+%Returns the manhattan distance of the board from the goal state
+function dist = manhattanDistance(board)
     dist = sum(abs(board.tiles - [1 2 3 4 5 6 7 8 9]));
 end
 

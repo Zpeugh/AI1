@@ -1,0 +1,40 @@
+A* PseudoCode
+-------------
+
+A_STAR(start)
+	open = {}
+	closed = {}
+
+	start.g = 1
+	start.h = manhattanDistance(start)
+	start.f = start.g + start.h
+
+	open.add(start)
+
+	while (open is not empty)
+		current = lowestScore(open)
+		if current == goal
+			done
+		end
+	
+		open.remove(current)
+		close.add(current)
+		
+		for all neighbors of current
+			if neighbor isn't in closed
+				if neighbor isn't in open
+					open.add(neighbor)
+				else if (current.g + 1) >= neighbor.g
+					continue			
+				end
+			
+				neighbor.g = current.g + 1
+				neighbor.h = manhattanDistance(neighbor)
+				neighbor.f = neighbor.g + neighbor.h
+			
+			end
+		end
+	end
+end
+
+
