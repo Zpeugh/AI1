@@ -46,34 +46,44 @@ classdef BoardUtilities
         %Iterative depth-first search, returns the depth
         %at which the node was found
         function iterations = idfs(board)
-            iterations = 1;
+            iterations = 0;
             found = false;
             while (found == false)                
-                found = BoardUtilities.dls(board, iterations);
-                iterations = iterations + 1;
+                value = BoardUtilities.dls(board, iterations);
+                iterations = iterations + abs(value);
+                if (value > 0)
+                    found = true;
+                end
             end           
         end
                 
-        %Depth-Limited search for EightBoard at specified depth
-        function found = dls(board, depth)
-            
-            if (depth == 0 && isGoal(board) )   
+        % Depth-Limited search for EightBoard at specified depth
+        % Returns -(number of steps) if not found
+        % Returns +(number of steps) if found
+        function iterations = dls(board, depth)
+            iterations = 1;
+            found = false;
+            if (isGoal(board))
                 found = true;
-                disp('\n###############FOUND A GOAL STATE###############');
-                return;
-            elseif( depth > 0)
-                adjacentBoards = BoardUtilities.nextBoards(board);           
-                for i = 1: length(adjacentBoards)
+            elseif (depth <= 0)
+                found = false;
+            else
+                adjacentBoards = BoardUtilities.nextBoards(board);
+                for i=1:length(adjacentBoards)
                     newBoard = adjacentBoards{i};
-                    found = BoardUtilities.dls(newBoard, depth - 1);
-                    if (found)
-                        return;
+                    value = BoardUtilities.dls(newBoard, depth - 1);
+                    iterations = iterations + abs(value);
+                    if (value > 0)
+                        found = true;
+                        break;
                     end
                 end
-            end  
-            found = false;
-            return;
-        end      
+            end
+            
+            if (~found)
+                iterations = -1 * iterations;
+            end
+        end 
                          
         %Breadth-First Search for the given EightBoard
         function iterations = bfs(board)
@@ -88,12 +98,12 @@ classdef BoardUtilities
                 count = count + 1;
                 currentBoard = q.pop();
                 
-                disp('currently deliberating on: ');
-                disp(currentBoard);
+                % disp('currently deliberating on: ');
+                % disp(currentBoard);
                 
                 if isGoal(currentBoard)
                     iterations = length(visitedBoards);
-                    disp('###############FOUND A GOAL STATE###############');
+                    % disp('###############FOUND A GOAL STATE###############');
                     return;
                 end
                 
@@ -151,7 +161,7 @@ classdef BoardUtilities
             while (~isempty(open))
                 current = BoardUtilities.lowestScore(open);
                 if (isGoal(current.board))
-                    disp('##############FOUND BOARD##############');
+                    % disp('##############FOUND BOARD##############');
                     break;
                 end
                 
@@ -380,5 +390,3 @@ function newBoard = swap(blankPos, oldBoard, offset)
     newBoard.tiles(blankPos + offset) = 9;
     newBoard.tiles(blankPos) = swapTile;
 end
-
-
