@@ -2,7 +2,9 @@ Programming Assignment 1- Eight-Puzzle
 
 Authors: Zach Peugh && Quinn McHugh
 
-Here is everything you need to know about this repository.
+Here is everything you need to know about this repository.  For easy viewing of
+results and files in general, go to the public repository in GitHub:
+                    https://github.com/Zpeugh/AI1
 
 ProblemFormulation.docx
     This is a word document outlining the problem presented.
