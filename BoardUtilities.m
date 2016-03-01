@@ -26,17 +26,12 @@ classdef BoardUtilities
                         break;
                     end
                 end
-            end
-            % disp(board.tiles)
-            % fprintf('moves made = %d and n = %d\n', count - 1, n);
-        end
-        
-        
-        
+            end           
+        end        
+                
         %Generate a random, solvable EightBoard
         function board = generateBoard()
-            tiles = randperm(9);                  
-            % This measure is not smart
+            tiles = randperm(9);
             while ( ~isValidArray(tiles) )                
                 tiles = randperm(9);
             end
@@ -124,28 +119,8 @@ classdef BoardUtilities
                 end                
             end            
         end    
-        
-        function lowest = lowestScore(open)
-            low = 10000;
-            for i=1:length(open)
-                if (open{i}.f < low)
-                    low = open{i}.f;
-                    lowest = open{i};
-                end                    
-            end
-        end
-        
-        function count = matchCount(node, list)
-            count = 0;
-            for i=1:length(list)
-                if (isequal(list{i}.board.tiles, node.board.tiles))
-                    count = count + 1;
-                    return;
-                end
-            end
-        end
-        
-        function cost = A_STAR(start)
+               
+        function cost = astar(start)
             open = {};
             closed = {};
             
@@ -159,7 +134,7 @@ classdef BoardUtilities
             open{end + 1} = startNode;
             
             while (~isempty(open))
-                current = BoardUtilities.lowestScore(open);
+                current = lowestScore(open);
                 if (isGoal(current.board))
                     % disp('##############FOUND BOARD##############');
                     break;
@@ -184,8 +159,8 @@ classdef BoardUtilities
                     neighborNode.h = manhattanDistance(neighbor);
                     neighborNode.f = neighborNode.g + neighborNode.h;
                     
-                    if (BoardUtilities.matchCount(neighborNode, closed) == 0)
-                        if (BoardUtilities.matchCount(neighborNode, open) == 0)
+                    if (matchCount(neighborNode, closed) == 0)
+                        if (matchCount(neighborNode, open) == 0)
                             cost = cost + 1;
                             open{end + 1} = neighborNode;
                         elseif (current.g + 1 >= neighborNode.g)
@@ -196,63 +171,7 @@ classdef BoardUtilities
                 end 
             end
         end
-        
-        %A* search algorithm that uses manhattanDistance as the heuristic
-        function finishNode = astar(board)
-            
-           
-            nodesVisited = 0;
-            % these lists need to be some List structure with push, pop,
-            % isEmpty methods and dynamic sizing. {} structs are not
-            % suitable as they are slow and 
-            openList = {};
-            closedList = {};
-            
-            %initialize the openList with the first BoardNode
-            b = BoardNode(board);            
-            finishNode = b;
-            b.g = 1;
-            b.f = b.g + b.h;
-            openList{end + 1} = b;
-            
-            while ( ~isempty(openList) )
-                                              
-                %pop the first element from openList;                
-                %parentNode = openList{1};
-                parentNode = openList{1};
-                openList(1) = [];
-             
-                parentNode.successors = BoardUtilities.nextBoards(parentNode.board);
-                nextNodes = parentNode.successors;
-                
-                %set the next nodes' parent to the parent node
-                for i=1:length(nextNodes)
-                    
-                    nodesVisited = nodesVisited + 1;  %count nodes visited
-                    node = BoardNode(nextNodes{i});
-                    
-                    node.parent = parentNode;
-                                        
-                    node.g = parentNode.g + 1;
-                    node.h = manhattanDistance(node.board);
-                    node.f = node.g + node.h;
-                    
-                    if (isGoal(node.board))
-                        finishNode = node;                        
-                        disp('###############FOUND A GOAL STATE###############');
-                        fprintf(1,'Visited a total of %i nodes\n', nodesVisited);
-                        return;
-                    end                   
-                    
-                    if ( ~containsBetterNode(openList, node) && ~containsBetterNode(closedList, node) )
-                        openList{end + 1} = node;                                    
-                    end
-                end
-                %push parentNode on closed list  
-                closedList{end + 1} = parentNode;   
-            end
-        end
-        
+               
         
         %Generates a struct of the 2-4 next possible boards from the one given
         function boardArray = nextBoards( board )
@@ -284,32 +203,33 @@ classdef BoardUtilities
             if (pos == 7 || pos == 8 || pos == 9)
                 boardArray{length(boardArray) + 1} = swapDown(pos, board);
             end
-        end
-
-      
+        end    
     end
 end
 
 %###########################Private Methods########################%
-
-
-function alreadyBeen = containsBetterNode(list, node)
-
-    %should try and optimize this with linear algebra instead of looping.
-    for i=1: length(list)
-        someNode = list{i};
-        if (isequal(someNode.board.tiles, node.board.tiles) )
-            if ( someNode.f < node.f )
-                alreadyBeen = true;
-                return;
-            end
-        end
-    end    
-    alreadyBeen = false;
-        
-
+ 
+%Returns the node with the lowest score in the list
+function lowest = lowestScore(open)
+    low = 10000;
+    for i=1:length(open)
+        if (open{i}.f < low)
+            low = open{i}.f;
+            lowest = open{i};
+        end                    
+    end
 end
 
+%Returns true if the list contains the same tile configuration as the node.
+function count = matchCount(node, list)
+    count = 0;
+    for i=1:length(list)
+        if (isequal(list{i}.board.tiles, node.board.tiles))
+            count = count + 1;
+            return;
+        end
+    end
+end
 %Returns the manhattan distance of the board from the goal state
 function dist = manhattanDistance(board)
     dist = sum(abs(board.tiles - [1 2 3 4 5 6 7 8 9]));
@@ -329,9 +249,7 @@ function hasBeen = hasBeenVisited(visitedBoards, board)
             return;
         end
     end
-
     hasBeen = false;
-
 
 end
 
@@ -361,7 +279,6 @@ end
 function finished = isGoal( board )
     finished = isequal(board.tiles, [1 2 3 4 5 6 7 8 9]);
 end
-
 
 %Swaps the blank tile with the tile to its left
 function newBoard = swapLeft(blankPos, oldBoard)
